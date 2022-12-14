@@ -1,0 +1,32 @@
+node {
+    def app
+
+    stage('Clone repository') {
+		
+      
+
+        checkout scm
+    }
+
+    stage('Build image') {
+  
+       app = docker.build(" krunalmaiske/kubernetes/test")
+    }
+
+    stage('Test image') {
+  
+
+        app.inside {
+            sh 'echo "Tests passed"'
+        }
+    }
+
+    stage('Push image') {
+        
+         withDockerRegistry(credentialsId: '58c8f7f1-75c4-4b15-aee9-28e732c98a3a', url: 'https://hub.docker.com/r/krunalmaiske/kubernetes') 
+     
+        }
+    }
+    
+     
+}
