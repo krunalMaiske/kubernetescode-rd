@@ -1,32 +1,38 @@
- node {
-    def app
+ pipeline {
+    agent any
+    environment{
+        DOCKERHUB_CREDS = credentials('dockerhub')
 
-    stage('Clone repository') {
-		
-      
-
-        checkout scm
     }
-
-    stage('Build image') {
-  
-       app = docker.build(" krunalmaiske/kubernetes/test")
-    }
-
-    stage('Test image') {
-  
-
-        app.inside {
-            sh 'echo "Tests passed"'
+    
+    stages {
+        stage('clonerepo'){
+            steps {
+                checkout scm 
+                sh 'ls *'
+                echo 'cloneing..'
+            }
         }
-    }
+    
+        stage('build'){
+            steps {
+                sh 'docker.build -t krunalmaiske/kubernetes/test'
+                echo 'building..'
+            }
+        }    
+        stage('docker login'){
+            steps {
+                sh 'echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin'
+                 
+            }
+        }
+        stage('docker push'){
+            steps{
+                sh 'docker push  krunalmaiskedockerid/kubernetes:$BUILD_NUMBER'
+            }
 
-    stage('Push image') {
+        }
         
-         withDockerRegistry(credentialsId: '58c8f7f1-75c4-4b15-aee9-28e732c98a3a', url: 'https://hub.docker.com/r/krunalmaiske/kubernetes') 
-     
-    }
-    
-    
-     
+    }   
+         
 }
